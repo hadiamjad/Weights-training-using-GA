@@ -40,7 +40,7 @@ def ANN(inputVec, inputWeights, hiddenWeights):
     inputYhat = np.dot(inputWeights, inputVec)
 
     # sigmoid
-    inputYhat = 1 / (1 + exp(-inputYhat))
+    inputYhat = 1 / (1 + exp(-1*inputYhat))
 
     # adding bias to the ouput of input layer
     inputYhat = np.insert(inputYhat.T, 0, values=1, axis=1)
@@ -95,7 +95,7 @@ def createPopulation(n):
     population = []
 
     for k in range(n):
-        x = np.random.randint(low=1, high=9999999, size=83)
+        x = np.random.uniform(low=-0.5, high=0.5, size=83)
         c = Chromosome(x)
         population.append(c)
 
@@ -126,16 +126,17 @@ def selection(old_population, inputVec, y):
 
     old_population.sort(key=lambda individual: individual.fitness)
     fittest = old_population[0].fitness
+    weights = old_population[0].weig
     if init_cost == 9999999:
         init_cost = fittest
 
-    return fittest, old_population[:20]
+    return fittest, weights, old_population[0:20]
 
 
 # cross over
 def crossOver(old_population):
     crossover = []
-    for i in range(70):
+    for i in range(60):
         t = np.random.randint(0, 20)
         m = old_population[t:t+1]
         t2 = np.random.randint(0, 20)
@@ -147,17 +148,17 @@ def crossOver(old_population):
         child[50:] = p2[50:]
         ind = Chromosome(child)
         crossover.append(ind)
-    return crossover[:]
+    return crossover
 
 # mutation
 def mutation(old_population):
     mutation = []
-    for i in range(10):
-        t = np.random.randint(0, 20)               # pick a random member of the population
+    for i in range(20):
+        t = np.random.randint(0, 90)               # pick a random member of the population
         m = old_population[t:t+1]
         index = np.random.randint(0, 82)            # random selection of a pixel
         p = m[0].weig
-        p[index] = np.random.randint(0, 256)
+        p[index] = np.random.uniform(low=-0.5, high=0.5, size=1)
         ind = Chromosome(p)
         mutation.append(ind)
     return mutation
@@ -166,18 +167,21 @@ def GeneticAlgorithm(inputVec, y):
     old_population = createPopulation(100)
     new_population = []
     weights = np.zeros(83)
+    bestweights = np.zeros(83)
     global init_cost
     fittest = -1
-    maxfit = -9999
+    maxfit = 9999
     i = 0
-    while i < 1000:
-        fittest, best_old = selection(old_population, inputVec, y)
+    while i < 20000:
+        fittest, weights, best_old = selection(old_population, inputVec, y)
         new_population.extend(best_old)
         new_population.extend(crossOver(old_population))
         new_population.extend(mutation(old_population))
-        if(fittest > maxfit):
+        # print(fittest)
+        if(fittest < maxfit):
+            #print(fittest)
             maxfit = fittest
-            weights = best_old[0]
+            bestweights = weights
         i += 1
         old_population = new_population
         new_population = []
@@ -188,8 +192,9 @@ def __main__():
    X_train, X_test, y_train, y_test = dataPreprocessing()
 
    fittest, weights = GeneticAlgorithm(X_train.T, y_train)
+   print(evaluation(X_train.T, weights, y_train))
+   print(evaluation(X_test.T, weights, y_test))
 
-   print(fittest)
 
    return 0
 
