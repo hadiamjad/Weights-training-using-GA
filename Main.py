@@ -172,7 +172,7 @@ def GeneticAlgorithm(inputVec, y):
     fittest = -1
     maxfit = 9999
     i = 0
-    while i < 20000:
+    while i < 40000:
         fittest, weights, best_old = selection(old_population, inputVec, y)
         new_population.extend(best_old)
         new_population.extend(crossOver(old_population))
@@ -192,8 +192,9 @@ def __main__():
    X_train, X_test, y_train, y_test = dataPreprocessing()
 
    fittest, weights = GeneticAlgorithm(X_train.T, y_train)
-   print(evaluation(X_train.T, weights, y_train))
-   print(evaluation(X_test.T, weights, y_test))
+   wrong_values = evaluation(X_test.T, weights, y_test)
+   print("Accuracy is")
+   print(((75 - wrong_values) * 100) / 75)
 
 
    return 0
